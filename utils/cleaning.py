@@ -1,12 +1,13 @@
 import json
 import logging
 from typing import List, Dict, Any
+
 import pandas as pd
 from dateutil import parser
 from pandas import json_normalize
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = logging.getLogger('cloudwatch_logger')
+
 
 def get_video_id(url: str) -> str:
     """Extracts the ID of a YouTube video from its URL.
@@ -104,17 +105,17 @@ def convert_to_datetime(df, column_name="watched_at"):
         try:
             # Parse the date
             dt = parser.isoparse(val)
-            
+
             # Truncate to your required precision (up to seconds and two decimal places)
             dt = dt.replace(microsecond=int(dt.microsecond / 10000) * 10000)
             return dt
         except ValueError:
             logger.info(f"ValueError: Could not convert {val} to datetime.")
             return pd.NaT  # Return Not a Time for unparseable formats
-    
+
     # Apply the conversion function to the DataFrame column
     df[column_name] = df[column_name].apply(to_datetime)
-    
+
     if df[column_name].isna().any():
         logger.warning(f"Some values in {column_name} could not be converted to datetime.")
     else:
@@ -206,7 +207,7 @@ def preprocess_data_clai_light(raw_data: str) -> pd.DataFrame:
     # Remove the 'order' column, if you don't need it anymore
     df_concatenated.drop(columns=['order'], inplace=True)
 
-    df_concatenated = df_concatenated.dropna(subset = ["url", "title", "channelName"])
+    df_concatenated = df_concatenated.dropna(subset=["url", "title", "channelName"])
     # [["url", "timestamp", "title", "type"]]
     df_concatenated["video_id"] = df_concatenated.url.apply(lambda x: get_video_id(x))
 

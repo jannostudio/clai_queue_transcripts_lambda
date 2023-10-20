@@ -1,7 +1,8 @@
 import json
+from typing import List, Dict, Set
+
 import boto3
 import pandas as pd
-from typing import List, Dict, Set
 
 sqs_client = boto3.client('sqs')
 QUEUE_URL = 'https://sqs.eu-central-1.amazonaws.com/800678845068/clai_get_transcript_queue'
@@ -30,7 +31,7 @@ def prepare_sqs_messages(df: pd.DataFrame, existing_ids: Set[str], file_id: str)
 
     # Step 4: Iterate through the filtered DataFrame
     for idx, record in filtered_df.iterrows():
-        current_transcript = idx+1
+        current_transcript = idx + 1
         video_id = record['video_id']
 
         # Add the new video_id to existing_ids

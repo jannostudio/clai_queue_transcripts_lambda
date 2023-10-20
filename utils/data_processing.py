@@ -1,12 +1,14 @@
 import json
+import logging
 import os
 import pickle
 from datetime import datetime
+from typing import Dict, Set, Tuple, Union
+
 import boto3
 import pandas as pd
-from typing import Dict, Set, Tuple, Union
-from utils import cleaning
 
+from utils import cleaning
 
 s3 = boto3.client('s3')
 BUCKET_NAME = 'clai-video-ids'
@@ -14,6 +16,7 @@ CLAI_EXPORTS_BUCKET_NAME = "clai-youtube-exports"
 CLAI_LIGHT_EXPORTS_BUCKET_NAME = "clai-light-youtube-exports"
 FILE_NAME = 'all/all.pickle'
 
+logger = logging.getLogger('cloudwatch_logger')
 
 
 def download_and_preprocess_data(event: Dict) -> Tuple[pd.DataFrame, Dict[str, Union[str, str]]]:
@@ -32,7 +35,7 @@ def download_and_preprocess_data(event: Dict) -> Tuple[pd.DataFrame, Dict[str, U
 
         # Remove the '.json' extension from the s3_key
         s3_key_base, _ = os.path.splitext(s3_key)
-        
+
         # Fetching the upload timestamp from the event
         upload_timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -45,7 +48,7 @@ def download_and_preprocess_data(event: Dict) -> Tuple[pd.DataFrame, Dict[str, U
             # Cleaning step for the second bucket
             df = cleaning.preprocess_data_clai_light(raw_data)
         else:
-            print(f"Unknown bucket: {s3_bucket}")
+            logger.error(f"Unknown bucket: {s3_bucket}")
             raise ValueError(f"Unknown bucket: {s3_bucket}")
 
         metadata = {
@@ -56,8 +59,9 @@ def download_and_preprocess_data(event: Dict) -> Tuple[pd.DataFrame, Dict[str, U
 
         return df, metadata
     except Exception as e:
-        print(f"Failed to download and preprocess data: {e}")
+        logger.error(f"Failed to download and preprocess data: {e}")
         raise
+
 
 def download_existing_video_ids() -> Set[str]:
     """Download the existing set of video IDs from S3.
@@ -71,5 +75,5 @@ def download_existing_video_ids() -> Set[str]:
         return set(pickle.loads(body))
     except Exception as e:
         # Replace with your logging or error handling mechanism
-        print(f"Failed to download existing video IDs: {e}")
+        logger.error(f"Failed to download existing video IDs: {e}")
         raise

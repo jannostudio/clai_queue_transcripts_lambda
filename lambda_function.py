@@ -4,11 +4,14 @@ This script performs several operations, such as data preprocessing, message
 queueing, and duplicate detection, to manage YouTube watch history data.
 """
 
-import boto3
 import logging
 import pickle
 from datetime import datetime
 from typing import Dict
+
+import boto3
+
+from logging_config.config import setup_logging, set_request_id, set_lambda_context
 from utils.data_processing import download_and_preprocess_data, download_existing_video_ids, BUCKET_NAME, FILE_NAME
 from utils.queue_management import prepare_sqs_messages, send_messages_to_sqs
 
@@ -23,18 +26,24 @@ table = dynamodb.Table('clai_files_status')
 sqs = boto3.client('sqs')
 labeling_queue = 'https://sqs.eu-central-1.amazonaws.com/800678845068/clai_process_file_queue.fifo'
 
+# Logging Configuration for boto3 and botocore
+logging.getLogger("boto3").setLevel(logging.WARNING)
+logging.getLogger("botocore").setLevel(logging.WARNING)
 
-# Logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+# Retrieve the logger that's already configured
+setup_logging()
+logger = logging.getLogger('cloudwatch_logger')
 
 
 def lambda_handler(event: Dict, context: Dict) -> Dict:
     try:
         df, metadata = download_and_preprocess_data(event)
+
+        # initialize logging
+        set_request_id(str(metadata["file_id"]))
+        set_lambda_context(context)
+
         existing_ids = download_existing_video_ids()
-        # df = df.sample(3)
-        # existing_ids = set(["uoeWaYPkAIc"])
         num_ids_before = len(existing_ids)
 
         messages = prepare_sqs_messages(df, existing_ids, str(metadata["file_id"]))
@@ -84,7 +93,7 @@ def lambda_handler(event: Dict, context: Dict) -> Dict:
                 MessageGroupId=result['file_id'],
                 MessageDeduplicationId=f"{result['file_id']}_{datetime.now().timestamp()}"
             )
-            logger.info(f"Message send to labeling queue: {sqs_response}")
+            logger.debug(f"Message send to labeling queue: {sqs_response}")
         except Exception as sqs_exception:
             logger.error(f"Failed to send message to labeling queue: {sqs_exception}")
 

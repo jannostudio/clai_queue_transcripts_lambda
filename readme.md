@@ -2,7 +2,9 @@
 
 ## Overview
 
-This repository contains the code for an AWS Lambda function that is designed to manage YouTube watch history data. The function performs multiple operations such as downloading data from an S3 bucket, preprocessing it, and then queuing messages to an SQS queue for further processing.
+This repository contains the code for an AWS Lambda function that is designed to manage YouTube watch history data. The
+function performs multiple operations such as downloading data from an S3 bucket, preprocessing it, and then queuing
+messages to an SQS queue for further processing.
 
 ## Features
 
@@ -22,12 +24,14 @@ This repository contains the code for an AWS Lambda function that is designed to
 ## Getting Started
 
 1. Clone the repository
-2. Configure the Lambda function to use the AWS managed pandas layer (Layer ARN: `arn:aws:lambda:eu-central-1:336392948345:layer:AWSSDKPandas-Python310:4`)
+2. Configure the Lambda function to use the AWS managed pandas layer (Layer
+   ARN: `arn:aws:lambda:eu-central-1:336392948345:layer:AWSSDKPandas-Python310:4`)
 3. Deploy the Lambda function to your AWS environment
 
 ## Usage
 
-The Lambda function will automatically trigger upon receiving an event, preprocess the data, and perform the above-mentioned features.
+The Lambda function will automatically trigger upon receiving an event, preprocess the data, and perform the
+above-mentioned features.
 
 ## Logging
 
