@@ -1,0 +1,7 @@
+*.zip
+.idea/
+.ipynb_checkpoints/
+*.pyc
+__pycache__/
+.gitignore.save
+.env
