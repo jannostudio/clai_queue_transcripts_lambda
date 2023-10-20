@@ -110,7 +110,7 @@ def convert_to_datetime(df, column_name="watched_at"):
             dt = dt.replace(microsecond=int(dt.microsecond / 10000) * 10000)
             return dt
         except ValueError:
-            logger.info(f"ValueError: Could not convert {val} to datetime.")
+            logger.error(f"ValueError: Could not convert {val} to datetime.")
             return pd.NaT  # Return Not a Time for unparseable formats
 
     # Apply the conversion function to the DataFrame column
@@ -119,7 +119,7 @@ def convert_to_datetime(df, column_name="watched_at"):
     if df[column_name].isna().any():
         logger.warning(f"Some values in {column_name} could not be converted to datetime.")
     else:
-        logger.info(f"Successfully converted {column_name} to datetime.")
+        logger.debug(f"Successfully converted {column_name} to datetime.")
 
 
 def calculate_sub_group_rank(df, groupby_column='channel_name', datetime_column='watched_at'):
